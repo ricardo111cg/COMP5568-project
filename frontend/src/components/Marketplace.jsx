@@ -3,6 +3,7 @@ import { ethers } from 'ethers';
 import { ShoppingCart, DollarSign, RefreshCw } from 'lucide-react';
 import { useWeb3 } from '../hooks/useWeb3';
 import { CONTRACT_ADDRESSES, NETWORK_CONFIG } from '../config/contracts';
+// ABI需手动引入、替换成你的内容
 import { NFT_ABI, MARKETPLACE_ABI, STABLECOIN_ABI } from '../config/abis';
 
 const MARKETPLACE_START_BLOCK = Number(import.meta.env.VITE_MARKETPLACE_START_BLOCK ?? 0);
@@ -62,39 +63,9 @@ const fetchMetadataFromUri = async (uri) => {
   return { tokenURI: normalized, image: normalized, name: '', description: '' };
 };
 
-const buildActiveListings = (listedEvents, cancelledEvents, soldEvents, targetContract) => {
-  const target = targetContract.toLowerCase();
-  const listingMap = new Map();
-
-  listedEvents.forEach((event) => {
-    const { nftContract, tokenId, seller, price } = event.args ?? {};
-    if (!tokenId || nftContract?.toLowerCase() !== target) return;
-    const id = tokenId.toString();
-    listingMap.set(id, {
-      tokenId: Number(id),
-      seller,
-      priceWei: price,
-      blockNumber: event.blockNumber,
-      txHash: event.transactionHash,
-    });
-  });
-
-  const removeByEvents = (events) => {
-    events.forEach((event) => {
-      const { nftContract, tokenId } = event.args ?? {};
-      if (!tokenId || nftContract?.toLowerCase() !== target) return;
-      listingMap.delete(tokenId.toString());
-    });
-  };
-
-  removeByEvents(cancelledEvents);
-  removeByEvents(soldEvents);
-
-  return Array.from(listingMap.values());
-};
-
 export default function Marketplace() {
   const { signer, provider, account, isConnected } = useWeb3();
+  // 优先用signer，其次provider, 最后rpc
   const rpcProvider = useMemo(() => {
     try {
       return new ethers.JsonRpcProvider(NETWORK_CONFIG.rpcUrl);
@@ -120,15 +91,29 @@ export default function Marketplace() {
         STABLECOIN_ABI,
         readProvider
       );
-      const balance = await stablecoinContract.balanceOf(account);
-      setStablecoinBalance(ethers.formatEther(balance));
+      const [balance, decimals] = await Promise.all([
+        stablecoinContract.balanceOf(account),
+        // decimals may be undefined on some ERC20s; default to 18
+        (async () => {
+          try {
+            return await stablecoinContract.decimals();
+          } catch {
+            return 18;
+          }
+        })(),
+      ]);
+      setStablecoinBalance(ethers.formatUnits(balance, Number(decimals ?? 18)));
     } catch (err) {
       console.error('加载稳定币余额失败:', err);
     }
   }, [account, readProvider]);
 
+  // ---- 关键逻辑：只以合约实际listings里的active = true展示 ---- //
   const loadListings = useCallback(async () => {
-    if (!readProvider) return;
+    if (!readProvider) {
+      setError('No RPC/provider available — set VITE_RPC_URL or connect a wallet');
+      return;
+    }
     setLoading(true);
     setError(null);
 
@@ -139,60 +124,70 @@ export default function Marketplace() {
         readProvider
       );
       const nftContract = new ethers.Contract(CONTRACT_ADDRESSES.NFT, NFT_ABI, readProvider);
+      const stablecoinContract = new ethers.Contract(CONTRACT_ADDRESSES.Stablecoin, STABLECOIN_ABI, readProvider);
 
-      const [listedEvents, cancelledEvents, soldEvents] = await Promise.all([
-        marketplaceContract.queryFilter(
-          marketplaceContract.filters.Listed(),
-          MARKETPLACE_START_BLOCK,
-          'latest'
-        ),
-        marketplaceContract.queryFilter(
-          marketplaceContract.filters.Cancelled(),
-          MARKETPLACE_START_BLOCK,
-          'latest'
-        ),
-        marketplaceContract.queryFilter(
-          marketplaceContract.filters.Sold(),
-          MARKETPLACE_START_BLOCK,
-          'latest'
-        ),
-      ]);
+      let stablecoinDecimals = 18;
+      try {
+        stablecoinDecimals = Number(await stablecoinContract.decimals());
+      } catch (e) {}
 
-      const activeListings = buildActiveListings(
-        listedEvents,
-        cancelledEvents,
-        soldEvents,
-        CONTRACT_ADDRESSES.NFT
+      // 获取所有Listed事件
+      const listedEvents = await marketplaceContract.queryFilter(
+        marketplaceContract.filters.Listed(CONTRACT_ADDRESSES.NFT),
+        MARKETPLACE_START_BLOCK,
+        'latest'
       );
 
-      const enriched = await Promise.allSettled(
-        activeListings.map(async (listing) => {
+      // 提取所有tokenId, 对每个tokenId查询链上listings状态
+      const tokenIds = Array.from(
+        new Set(listedEvents.map(e => e.args.tokenId.toString()))
+      );
+
+      const enrichedListings = await Promise.all(
+        tokenIds.map(async (tokenId) => {
+          // 查询合约listings映射真实状态
+          let listingOnChain;
+          try {
+            listingOnChain = await marketplaceContract.listings(CONTRACT_ADDRESSES.NFT, tokenId);
+          } catch (e) {
+            return null; // 跳过异常
+          }
+          if (!listingOnChain.active) return null; // 只要active
+
           let metadata = { tokenURI: '', image: '', name: '', description: '' };
           if (typeof nftContract.tokenURI === 'function') {
             try {
-              const uri = await nftContract.tokenURI(BigInt(listing.tokenId));
+              const uri = await nftContract.tokenURI(BigInt(tokenId));
               metadata = await fetchMetadataFromUri(uri);
             } catch (metaErr) {
-              console.warn(`tokenId ${listing.tokenId} 元数据获取失败`, metaErr);
+              console.warn(`tokenId ${tokenId} 元数据获取失败`, metaErr);
             }
           }
+
+          // 能拿的事件信息（如blockNumber, txHash等）补充到item
+          const eventInfo = listedEvents.find(e => e.args.tokenId.toString() === tokenId);
+
           return {
-            ...listing,
+            tokenId: Number(tokenId),
+            seller: listingOnChain.seller,
+            priceWei: listingOnChain.price,
+            price: ethers.formatUnits(listingOnChain.price, stablecoinDecimals),
             metadata,
-            price: ethers.formatEther(listing.priceWei),
+            blockNumber: eventInfo?.blockNumber,
+            txHash: eventInfo?.transactionHash,
+            active: listingOnChain.active
           };
         })
       );
 
       setListings(
-        enriched
-          .filter((res) => res.status === 'fulfilled')
-          .map((res) => res.value)
-          .sort((a, b) => b.blockNumber - a.blockNumber)
+        enrichedListings
+          .filter(Boolean)
+          .sort((a, b) => (b.blockNumber || 0) - (a.blockNumber || 0))
       );
     } catch (err) {
       console.error('加载列表失败:', err);
-      setError(err.message ?? '加载列表失败');
+      setError(err.message ?? '加载NFT列表失败');
     } finally {
       setLoading(false);
     }
@@ -204,6 +199,7 @@ export default function Marketplace() {
     loadStablecoinBalance();
   }, [isReady, loadListings, loadStablecoinBalance]);
 
+  // 购买
   const handleBuy = async (tokenId, price) => {
     if (!signer || !account) {
       alert('请先连接钱包并确保已授权交易');
@@ -221,17 +217,14 @@ export default function Marketplace() {
         STABLECOIN_ABI,
         signer
       );
-
-      const priceWei = ethers.parseEther(price);
+      const priceWei = ethers.parseUnits(price, 18);
       const allowance = await stablecoinContract.allowance(account, CONTRACT_ADDRESSES.Marketplace);
       if (allowance < priceWei) {
         const approveTx = await stablecoinContract.approve(CONTRACT_ADDRESSES.Marketplace, priceWei);
         await approveTx.wait();
       }
-
       const tx = await marketplaceContract.buyNFT(CONTRACT_ADDRESSES.NFT, tokenId);
       await tx.wait();
-
       alert('购买成功！');
       await Promise.all([loadListings(), loadStablecoinBalance()]);
     } catch (err) {
@@ -242,7 +235,13 @@ export default function Marketplace() {
     }
   };
 
-  // NOTE: allow browsing listings without connecting wallet. Buying still requires a connected signer.
+  // ui provider类型
+  const providerType = useMemo(() => {
+    if (signer) return 'wallet (signer)';
+    if (provider) return 'wallet (provider)';
+    if (rpcProvider) return 'rpc';
+    return 'none';
+  }, [signer, provider, rpcProvider]);
 
   return (
     <div className="space-y-6">
@@ -273,6 +272,15 @@ export default function Marketplace() {
           未连接钱包：您可以浏览市场并查看 NFT，购买前请连接钱包。
         </div>
       )}
+
+      <div className="mt-3 p-3 bg-gray-50 border border-gray-100 rounded text-sm text-gray-600">
+        <div className="font-medium text-gray-700 mb-1">调试信息</div>
+        <div>RPC: <span className="font-mono">{NETWORK_CONFIG.rpcUrl || '—'}</span></div>
+        <div>NFT 合约: <span className="font-mono">{CONTRACT_ADDRESSES.NFT}</span></div>
+        <div>Marketplace 合约: <span className="font-mono">{CONTRACT_ADDRESSES.Marketplace}</span></div>
+        <div>Stablecoin 合约: <span className="font-mono">{CONTRACT_ADDRESSES.Stablecoin}</span></div>
+        <div>Provider: <span className="font-mono">{providerType}</span></div>
+      </div>
 
       {error && (
         <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -331,4 +339,3 @@ export default function Marketplace() {
     </div>
   );
 }
-
