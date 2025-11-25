@@ -3,7 +3,6 @@ import { ethers } from 'ethers';
 import { ShoppingCart, DollarSign, RefreshCw } from 'lucide-react';
 import { useWeb3 } from '../hooks/useWeb3';
 import { CONTRACT_ADDRESSES, NETWORK_CONFIG } from '../config/contracts';
-// ABI需手动引入、替换成你的内容
 import { NFT_ABI, MARKETPLACE_ABI, STABLECOIN_ABI } from '../config/abis';
 
 const MARKETPLACE_START_BLOCK = Number(import.meta.env.VITE_MARKETPLACE_START_BLOCK ?? 0);

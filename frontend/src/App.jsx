@@ -5,6 +5,8 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 import WalletConnect from './components/WalletConnect';
 import Marketplace from './components/Marketplace';
 import MyNFTs from './components/MyNFTs';
+import MintNFT from './components/MintNFT';
+import MintStablecoin from './components/MintStablecoin';
 import './App.css';
 
 function Navigation() {
@@ -39,6 +41,26 @@ function Navigation() {
               >
                 我的 NFT
               </Link>
+              <Link
+                to="/mint-nft"
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  location.pathname === '/mint-nft'
+                    ? 'bg-blue-100 text-blue-700 font-medium'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                发行 NFT
+              </Link>
+              <Link
+                to="/mint-stablecoin"
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  location.pathname === '/mint-stablecoin'
+                    ? 'bg-blue-100 text-blue-700 font-medium'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                发行稳定币
+              </Link>
             </div>
           </div>
           <WalletConnect />
@@ -57,6 +79,8 @@ function App() {
           <Routes>
             <Route path="/" element={<Marketplace />} />
             <Route path="/my-nfts" element={<MyNFTs />} />
+            <Route path="/mint-nft" element={<MintNFT />} />
+            <Route path="/mint-stablecoin" element={<MintStablecoin />} />
           </Routes>
         </main>
       </div>
