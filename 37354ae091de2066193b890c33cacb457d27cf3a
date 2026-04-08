@@ -1,0 +1,109 @@
+artifacts-hardhat/contracts/MockWETH.sol/MockWETH.dbg.json
+  c1d0f4a23db41324 1-4
+scripts/deploy.cjs
+  c1d0f4a23db41324 1-136
+frontend/src/components/lending/LendingPage.jsx
+  c1d0f4a23db41324 1-289
+artifacts-hardhat/@openzeppelin/contracts/interfaces/draft-IERC6093.sol/IERC20Errors.json
+  c1d0f4a23db41324 1-97
+artifacts-hardhat/@openzeppelin/contracts/access/Ownable.sol/Ownable.dbg.json
+  c1d0f4a23db41324 1-4
+artifacts-hardhat/@openzeppelin/contracts/token/ERC20/ERC20.sol/ERC20.json
+  c1d0f4a23db41324 1-319
+artifacts-hardhat/@openzeppelin/contracts/interfaces/draft-IERC6093.sol/IERC721Errors.json
+  c1d0f4a23db41324 1-114
+artifacts-hardhat/contracts/LendingPool.sol/LendingPool.json
+  c1d0f4a23db41324 1-840
+artifacts-hardhat/@openzeppelin/contracts/token/ERC20/IERC20.sol/IERC20.dbg.json
+  c1d0f4a23db41324 1-4
+frontend/src/config/lendingAbis.js
+  c1d0f4a23db41324 1-41
+hardhat.config.cjs
+  c1d0f4a23db41324 1-28
+artifacts-hardhat/@openzeppelin/contracts/token/ERC20/IERC20.sol/IERC20.json
+  c1d0f4a23db41324 1-194
+artifacts-hardhat/@openzeppelin/contracts/interfaces/draft-IERC6093.sol/IERC1155Errors.dbg.json
+  c1d0f4a23db41324 1-4
+artifacts-hardhat/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol/IERC20Metadata.dbg.json
+  c1d0f4a23db41324 1-4
+artifacts-hardhat/@openzeppelin/contracts/interfaces/draft-IERC6093.sol/IERC20Errors.dbg.json
+  c1d0f4a23db41324 1-4
+artifacts-hardhat/@openzeppelin/contracts/utils/ReentrancyGuard.sol/ReentrancyGuard.dbg.json
+  c1d0f4a23db41324 1-4
+artifacts-hardhat/contracts/Stablecoin.sol/Stablecoin.json
+  c1d0f4a23db41324 1-436
+artifacts-hardhat/@openzeppelin/contracts/utils/Context.sol/Context.json
+  c1d0f4a23db41324 1-10
+artifacts-hardhat/@openzeppelin/contracts/utils/StorageSlot.sol/StorageSlot.json
+  c1d0f4a23db41324 1-10
+frontend/src/components/lending/BorrowPage.jsx
+  c1d0f4a23db41324 1-401
+GUIDE.md
+  c1d0f4a23db41324 1-286
+README.md
+  c1d0f4a23db41324 1,3,5,7,9,11,13-26,28,30,32-38,40,42-58,60-63,65,68,70-72,74,79-103,105-107,110,112,114,116-120,122-124,126-131,134-135,137-142,144,146-147,149,151,153-158
+package.json
+  c1d0f4a23db41324 1-32
+PROGRESS.md
+  c1d0f4a23db41324 1-132
+artifacts-hardhat/@openzeppelin/contracts/utils/ReentrancyGuard.sol/ReentrancyGuard.json
+  c1d0f4a23db41324 1-16
+frontend/src/components/lending/Dashboard.jsx
+  c1d0f4a23db41324 1-320
+frontend/src/App.jsx
+  c1d0f4a23db41324 10-13,16-35,38,40,43,45-46,48-62,64,66-68,71,86-92
+REQUIREMENTS.md
+  c1d0f4a23db41324 1-110
+deployed-addresses.json
+  c1d0f4a23db41324 1-9
+artifacts-hardhat/@openzeppelin/contracts/token/ERC20/ERC20.sol/ERC20.dbg.json
+  c1d0f4a23db41324 1-4
+artifacts-hardhat/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol/IERC20Metadata.json
+  c1d0f4a23db41324 1-233
+artifacts-hardhat/contracts/MockWETH.sol/MockWETH.json
+  c1d0f4a23db41324 1-436
+contracts/LendingPool.sol
+  c1d0f4a23db41324 1-579
+artifacts-hardhat/@openzeppelin/contracts/access/Ownable.sol/Ownable.json
+  c1d0f4a23db41324 1-85
+artifacts-hardhat/@openzeppelin/contracts/utils/StorageSlot.sol/StorageSlot.dbg.json
+  c1d0f4a23db41324 1-4
+artifacts-hardhat/build-info/3cfc6d4393daba6c2fb43ec320da617a.json
+  c1d0f4a23db41324 1
+artifacts-hardhat/@openzeppelin/contracts/utils/Context.sol/Context.dbg.json
+  c1d0f4a23db41324 1-4
+contracts/MockWETH.sol
+  c1d0f4a23db41324 1-27
+artifacts-hardhat/@openzeppelin/contracts/interfaces/draft-IERC6093.sol/IERC721Errors.dbg.json
+  c1d0f4a23db41324 1-4
+artifacts-hardhat/@openzeppelin/contracts/interfaces/draft-IERC6093.sol/IERC1155Errors.json
+  c1d0f4a23db41324 1-113
+artifacts-hardhat/contracts/LendingPool.sol/LendingPool.dbg.json
+  c1d0f4a23db41324 1-4
+artifacts-hardhat/contracts/Stablecoin.sol/Stablecoin.dbg.json
+  c1d0f4a23db41324 1-4
+contracts/Stablecoin.sol
+  c1d0f4a23db41324 1-26
+frontend/src/config/lendingContracts.js
+  c1d0f4a23db41324 1-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.6-bit.3+b401fb2",
+  "base_commit_sha": "37354ae091de2066193b890c33cacb457d27cf3a",
+  "prompts": {
+    "c1d0f4a23db41324": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cca3d731-b987-45a6-8697-32c95dacbc03",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "ricardo.chen <ricardo.chen@bybit.com>",
+      "messages": [],
+      "total_additions": 6684,
+      "total_deletions": 397,
+      "accepted_lines": 6400,
+      "overriden_lines": 0
+    }
+  }
+}
